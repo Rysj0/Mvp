@@ -6,6 +6,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import cn.edu.gdmec.android.mvp.BookBean;
 import cn.edu.gdmec.android.mvp.WeatherBean;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -43,7 +44,7 @@ public class OkHttpUtils {
             @Override
             public void onFailure(Call call, IOException e) {
                 if (resultCallback != null){
-                    resultCallback.oFailure(e);
+                    resultCallback.onFailure(e);
                 }
             }
 
@@ -59,8 +60,50 @@ public class OkHttpUtils {
             }
         });
     }
-    public interface ResultCallback{
-          void getWeather(WeatherBean weatherBean);
-          void oFailure(Exception e);
+
+    public void sendBookRequest(String url, final ResultBookCallback resultBookCallback) {
+
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(2, TimeUnit.SECONDS)
+                .build();
+
+        final Request request = new Request.Builder()
+                .url(url)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                if (resultBookCallback != null) {
+                    resultBookCallback.onFailure(e);
+                }
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                res = response.body().string();
+                Log.i("res", res);
+                BookBean bean = JsonUtils.getBook(res);
+                if (resultBookCallback != null) {
+                    resultBookCallback.getBook(bean);
+                }
+            }
+        });
+    }
+
+    public static void getResultBookCallback(String url, ResultBookCallback resultBookCallback) {
+        getInstance().sendBookRequest(url, resultBookCallback);
+    }
+
+    public interface ResultCallback {
+        void getWeather(WeatherBean weatherBean);
+
+        void onFailure(Exception e);
+
+    }
+    public interface ResultBookCallback {
+        void getBook(BookBean bookBean);
+
+        void onFailure(Exception e);
     }
 }

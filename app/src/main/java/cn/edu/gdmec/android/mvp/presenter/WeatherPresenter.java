@@ -10,12 +10,12 @@ import cn.edu.gdmec.android.mvp.model.WeatherModel;
  * Created by apple on 18/5/15.
  */
 
-public class WearherPresenter implements  IWeatherPresenter,ILoadlistener {
+public class WeatherPresenter implements  IWeatherPresenter,ILoadlistener {
     private String url = "https://www.sojson.com/open/api/weather/json.shtml?city=";
 
     private IWeatherView iweatherView;
     private IWeatherModel iWeatherModel;
-    public WearherPresenter(IWeatherView iweatherView){
+    public WeatherPresenter(IWeatherView iweatherView){
         this.iweatherView = iweatherView;
         this.iWeatherModel = new WeatherModel();
     }

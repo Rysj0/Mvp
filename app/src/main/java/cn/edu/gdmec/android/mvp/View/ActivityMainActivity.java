@@ -2,60 +2,77 @@ package cn.edu.gdmec.android.mvp.View;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.TabHost;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.TimerTask;
 
+import cn.edu.gdmec.android.mvp.BookBean;
 import cn.edu.gdmec.android.mvp.R;
 import cn.edu.gdmec.android.mvp.WeatherBean;
-import cn.edu.gdmec.android.mvp.presenter.IWeatherPresenter;
-import cn.edu.gdmec.android.mvp.presenter.WearherPresenter;
+import cn.edu.gdmec.android.mvp.presenter.BookPresenter;
+import cn.edu.gdmec.android.mvp.presenter.WeatherPresenter;
 
-public class ActivityMainActivity extends Activity implements IWeatherView,View.OnClickListener{
+public class ActivityMainActivity extends Activity implements IBookView, IWeatherView, View.OnClickListener{
 
     private TextView tvWeather;
     private TextView tvWeatherYesterday;
     private ProgressDialog progressDialog;
-    private IWeatherPresenter presenter;
+    private WeatherPresenter presenter;
+    private BookPresenter bookPresenter;
+    private Button btn_book;
+    private TextView tv_book;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        initView();
 
         findViewById(R.id.btn_search).setOnClickListener(this);
         findViewById(R.id.btn_beijin_search).setOnClickListener(this);
-        tvWeather = findViewById(R.id.tv_weather);
-        tvWeatherYesterday = findViewById(R.id.tv_weather_yesterday);
-        presenter = new WearherPresenter(this);
+        tvWeather = (TextView) findViewById(R.id.tv_weather);
+        tvWeatherYesterday = (TextView) findViewById(R.id.tv_weather_yesterday);
+        presenter = new WeatherPresenter(this);
+        bookPresenter = new BookPresenter(this);
+
     }
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()){
+        switch (view.getId()) {
             case R.id.btn_search:
                 presenter.loadWeather("广州");
                 break;
             case R.id.btn_beijin_search:
                 presenter.loadWeather("北京");
                 break;
+            case R.id.btn_book:
+                bookPresenter.loadBook("西游记");
+                break;
         }
+    }
 
+    @Override
+    public void showBook(final BookBean bookBean) {
+        runOnUiThread(new TimerTask() {
+            @Override
+            public void run() {
+                tv_book.setText(bookBean.getBooks().get(0).getAuthor()+" "+bookBean.getBooks().get(0).getSubtitle());
+            }
+        });
     }
 
     @Override
     public void showProgress() {
-        if (progressDialog != null && progressDialog.isShowing()){
-                progressDialog.dismiss();
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
         }
-        progressDialog = progressDialog.show(ActivityMainActivity.this,
-                "","正在获取");
-
+        progressDialog = ProgressDialog.show(ActivityMainActivity.this,
+                "", "正在获取");
     }
 
     @Override
@@ -68,22 +85,22 @@ public class ActivityMainActivity extends Activity implements IWeatherView,View.
     @Override
     public void showWeatnerData(final WeatherBean weatherBean) {
         runOnUiThread(new TimerTask() {
-        @Override
-        public void run() {
+            @Override
+            public void run() {
                 if (weatherBean.getStatus() == 304) {
                     Toast.makeText(ActivityMainActivity.this, weatherBean.getMessage(),
                             Toast.LENGTH_SHORT).show();
                 } else {
-                    tvWeather.setText("城市:" + weatherBean.getCity()
-                            + " 日期: " + weatherBean.getDate()
-                            + "  温度:" + weatherBean.getData().getWendu());
+                    tvWeather.setText("城市：" + weatherBean.getCity()
+                            + " 日期：" + weatherBean.getDate()
+                            + " 温度:" + weatherBean.getData().getWendu());
                     tvWeatherYesterday.setText(
-                            "昨日天气: " + weatherBean.getData().getYesterday().getLow() + " "
+                            "昨日天气：" + weatherBean.getData().getYesterday().getLow() + " "
                                     + weatherBean.getData().getYesterday().getHigh());
-
                 }
             }
         });
+
     }
 
     @Override
@@ -91,8 +108,16 @@ public class ActivityMainActivity extends Activity implements IWeatherView,View.
         runOnUiThread(new TimerTask() {
             @Override
             public void run() {
-                tvWeather.setText("加载数据失败：" + e.toString());
+                tvWeather.setText("加载数据失败:" + e.toString());
             }
         });
+
+    }
+
+    private void initView() {
+        btn_book = (Button) findViewById(R.id.btn_book);
+        tv_book = (TextView) findViewById(R.id.tv_book);
+
+        btn_book.setOnClickListener(this);
     }
 }

@@ -19,7 +19,7 @@ public class WeatherModel implements IWeatherModel {
             }
 
             @Override
-            public void oFailure(Exception e) {
+            public void onFailure(Exception e) {
                 loadlistener.onFailure(e);
 
             }
